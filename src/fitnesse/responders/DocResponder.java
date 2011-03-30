@@ -51,8 +51,6 @@ public class DocResponder implements SecureResponder {
 	}
 
 	private Document addChapter(WikiPage contextPage, Document docBook) {
-		// XmlUtil.addTextNode(rssDocument, itemElement1, "title", title);
-
 		Element itemChapter = docBook.createElement("chapter");
 		try {
 			itemChapter.setAttribute("id", "chapter_" + contextPage.getName());
