@@ -4,12 +4,15 @@ import java.io.ByteArrayOutputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
+import org.w3c.dom.DocumentType;
 import org.w3c.dom.Element;
 
-import util.XmlUtil;
 import util.XmlWriter;
-
 import fitnesse.FitNesseContext;
 import fitnesse.authentication.SecureOperation;
 import fitnesse.authentication.SecureReadOperation;
@@ -36,7 +39,7 @@ public class DocResponder implements SecureResponder {
 		SimpleResponse response = new SimpleResponse();
 
 		String title = "Test Dokumentation";
-		String bookAbstract = "Dies ist eine Zusammenfassung der Tests." + "";
+		String bookAbstract = "This is the abstract.";
 		Document docBook = buildDocBookHeader(title, bookAbstract);
 
 		// Letzter Node oder sind Sub-Nodes vorhanden?
@@ -44,6 +47,7 @@ public class DocResponder implements SecureResponder {
 		docBook = addChapter(contextPage, docBook);
 
 		byte[] bytes = toByteArray(docBook);
+
 		response.setContent(bytes);
 		response.setContentType("text/xml");
 
@@ -93,12 +97,25 @@ public class DocResponder implements SecureResponder {
 	 */
 	private Document buildDocBookHeader(String title, String bookabstract)
 			throws Exception {
-		Document docBook = XmlUtil.newDocument();
-		Element docBookElement = docBook.createElement("book");
 
+		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		DocumentBuilder db = dbf.newDocumentBuilder();
+
+		Document docBook1 = db.newDocument();
+
+		DOMImplementation domImpl = docBook1.getImplementation();
+		
+		DocumentType docBookType = domImpl.createDocumentType("book",
+				"-//OASIS//DTD DocBook XML V4.2//EN",
+				"http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd");
+		
+		Document docBook = domImpl.createDocument(null, "book", docBookType);
+		
 		Element itemTitle = docBook.createElement("title");
 		itemTitle.setTextContent(title);
-		docBookElement.appendChild(itemTitle);
+
+		// Unter das Root-Element einfuegen
+		docBook.getDocumentElement().appendChild(itemTitle);
 
 		Element itemAbstract = docBook.createElement("abstract");
 
@@ -106,9 +123,8 @@ public class DocResponder implements SecureResponder {
 		itemAbstractPara.setTextContent(bookabstract);
 		itemAbstract.appendChild(itemAbstractPara);
 
-		docBookElement.appendChild(itemAbstract);
-
-		docBook.appendChild(docBookElement);
+		// Unter das Root-Element einfuegen
+		docBook.getDocumentElement().appendChild(itemAbstract);
 
 		return docBook;
 	}
