@@ -30,7 +30,6 @@ public class DocResponder implements SecureResponder {
 	private WikiPage contextPage;
 	private String resource;
 
-	@Override
 	public Response makeResponse(FitNesseContext context, Request request)
 			throws Exception {
 
@@ -72,8 +71,12 @@ public class DocResponder implements SecureResponder {
 
 		Element itemChapterPara = docBook.createElement("para");
 		try {
-			itemChapterPara.setTextContent(parseContent(contextPage.getData()
-					.getContent()));
+			// normalize line-breaks
+			String Content = parseContent(contextPage.getData()
+					.getContent());
+			Content = Content.replaceAll("\r+", "\r");
+			Content = Content.replaceAll("\n+", "\n");
+			itemChapterPara.setTextContent(Content);
 		} catch (Exception e) {
 			//
 		}
