@@ -30,15 +30,27 @@ public class DocResponder implements SecureResponder {
 	private WikiPage contextPage;
 	private String resource;
 
+	/**
+	 * Create response
+	 */
 	public Response makeResponse(FitNesseContext context, Request request)
 			throws Exception {
 
 		contextPage = getContextPage(request, context);
 
 		SimpleResponse response = new SimpleResponse();
-
+		
 		String title = "Test Dokumentation";
-		String bookAbstract = "This is the abstract.";
+		
+		String bookAbstract = null;
+		if (contextPage.getData().hasAttribute("Suite")) {
+			bookAbstract = "This is a Suite!";
+		} else if (contextPage.getData().hasAttribute("Test")) {
+			bookAbstract = "This is a Test!";
+		} else {
+			bookAbstract = "Seems to be an normal page!";
+		}
+		
 		Document docBook = buildDocBookHeader(title, bookAbstract);
 
 		// Letzter Node oder sind Sub-Nodes vorhanden?
@@ -53,6 +65,13 @@ public class DocResponder implements SecureResponder {
 		return response;
 	}
 
+	/**
+	 * Add a chapter
+	 * 
+	 * @param contextPage
+	 * @param docBook
+	 * @return
+	 */
 	private Document addChapter(WikiPage contextPage, Document docBook) {
 		Element itemChapter = docBook.createElement("chapter");
 		try {
@@ -156,7 +175,6 @@ public class DocResponder implements SecureResponder {
 		return bytes;
 	}
 
-	@Override
 	public SecureOperation getSecureOperation() {
 		return new SecureReadOperation();
 	}
